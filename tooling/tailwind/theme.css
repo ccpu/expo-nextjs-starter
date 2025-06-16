@@ -1,0 +1,28 @@
+/* Shared theme CSS variables for both Expo and Next.js apps */
+:root {
+  /* Dark theme values - defined once */
+  --dark-bg: 215 15% 13%; /* #222831 */
+  --dark-bg-secondary: 215 14% 21%; /* #393E46 */
+  --dark-bg-tertiary: 215 12% 28%; /* #454e59 */
+  --dark-fg: 0 0% 93%; /* #EEEEEE */
+  --dark-fg-secondary: 344 43% 95%; /* #FDEBED */
+  --dark-primary: 275 66% 51%; /* #892CDC */
+  --dark-primary-light: 281 78% 59%; /* #BC6FF1 */
+  --dark-accent: 290 57% 82%; /* #D9ACF5 */
+  --dark-destructive: 0 62.8% 30.6%;
+  --dark-destructive-fg: 0 85.7% 97.3%;
+
+  /* Light theme values - defined once */
+  --light-bg: 0 0% 100%; /* #FFFFFF */
+  --light-bg-secondary: 290 20% 98%; /* #fdf6fd - matching your primary-300 */
+  --light-bg-tertiary: 290 100% 99%; /* #fff4ff - matching your accent-200 */
+  --light-fg: 215 15% 20%; /* Dark gray for text */
+  --light-fg-secondary: 215 10% 40%; /* Muted text */
+  --light-primary: 275 66% 51%; /* #892CDC - same as dark for consistency */
+  --light-primary-light: 281 78% 59%; /* #BC6FF1 */
+  --light-accent: 290 57% 75%; /* Slightly darker than dark accent for contrast */
+  --light-border: 290 15% 90%; /* Light purple-tinted border */
+  --light-destructive: 0 84% 60%;
+  --light-destructive-fg: 0 0% 98%;
+}
+

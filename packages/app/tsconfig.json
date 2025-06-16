@@ -1,0 +1,22 @@
+{
+  "extends": [
+    "@acme/tsconfig/internal-package.json",
+    "@acme/tsconfig/nativewind.json"
+  ],
+  "compilerOptions": {
+    "lib": [
+      "ES2022",
+      "dom",
+      "dom.iterable"
+    ],
+    "jsx": "preserve",
+    "rootDir": "."
+  },
+  "include": [
+    "src",
+    "index.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

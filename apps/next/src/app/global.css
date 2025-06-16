@@ -1,0 +1,98 @@
+
+@import "@acme/tailwind-config/theme.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * Building on the RNWeb reset:
+ * https://github.com/necolas/react-native-web/blob/master/packages/react-native-web/src/exports/StyleSheet/initialRules.js
+ */
+html,
+body,
+#__next {
+  width: 100%;
+  /* To smooth any scrolling behavior */
+  -webkit-overflow-scrolling: touch;
+  margin: 0px;
+  padding: 0px;
+  /* Allows content to fill the viewport and go beyond the bottom */
+  min-height: 100%;
+}
+
+#__next {
+  flex-shrink: 0;
+  flex-basis: auto;
+  flex-direction: column;
+  flex-grow: 1;
+  display: flex;
+  flex: 1;
+}
+
+html {
+  /* Prevent text size change on orientation change https://gist.github.com/tfausak/2222823#file-ios-8-web-app-html-L138 */
+  -webkit-text-size-adjust: 100%;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  /* Allows you to scroll below the viewport; default value is visible */
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -ms-overflow-style: scrollbar;
+}
+
+/**
+ * Base layer for theme customization.
+ * While core theme variables are imported from @acme/tailwind-config/theme.css,
+ * we still need this layer for manual theme class toggling (.dark/.light)
+ */
+@layer base {
+  .dark {
+    --background: var(--dark-bg);
+    --foreground: var(--dark-fg);
+    --card: var(--dark-bg-secondary);
+    --card-foreground: var(--dark-fg);
+    --popover: var(--dark-bg-secondary);
+    --popover-foreground: var(--dark-fg);
+    --primary: var(--dark-primary);
+    --primary-foreground: var(--dark-fg);
+    --secondary: var(--dark-bg-tertiary);
+    --secondary-foreground: var(--dark-fg);
+    --muted: var(--dark-bg-tertiary);
+    --muted-foreground: var(--dark-fg-secondary);
+    --accent: var(--dark-accent);
+    --accent-foreground: var(--dark-bg);
+    --destructive: var(--dark-destructive);
+    --destructive-foreground: var(--dark-destructive-fg);
+    --border: var(--dark-bg-tertiary);
+    --input: var(--dark-bg-tertiary);
+    --ring: var(--dark-primary-light);
+  }
+
+  .light {
+    --background: var(--light-bg);
+    --foreground: var(--light-fg);
+    --card: var(--light-bg-secondary);
+    --card-foreground: var(--light-fg);
+    --popover: var(--light-bg-secondary);
+    --popover-foreground: var(--light-fg);
+    --primary: var(--light-primary);
+    --primary-foreground: var(--light-bg);
+    --secondary: var(--light-bg-tertiary);
+    --secondary-foreground: var(--light-fg);
+    --muted: var(--light-bg-tertiary);
+    --muted-foreground: var(--light-fg-secondary);
+    --accent: var(--light-accent);
+    --accent-foreground: var(--light-bg);
+    --destructive: var(--light-destructive);
+    --destructive-foreground: var(--light-destructive-fg);
+    --border: var(--light-border);
+    --input: var(--light-border);
+    --ring: var(--light-primary-light);
+  }
+}
