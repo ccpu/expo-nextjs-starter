@@ -4,19 +4,10 @@
     "@acme/tsconfig/nativewind.json"
   ],
   "compilerOptions": {
-    "lib": [
-      "ES2022",
-      "dom",
-      "dom.iterable"
-    ],
+    "lib": ["ES2022", "dom", "dom.iterable"],
     "jsx": "preserve",
     "rootDir": "."
   },
-  "include": [
-    "src",
-    "index.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src", "index.ts"],
+  "exclude": ["node_modules"]
 }
