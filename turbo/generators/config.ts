@@ -1,95 +1,132 @@
 import { execSync } from "node:child_process";
-import type { PlopTypes } from "@turbo/gen";
+import { readFileSync } from "node:fs";
+import { parse } from "yaml";
 
-interface PackageJson {
-  name: string;
-  scripts: Record<string, string>;
-  dependencies: Record<string, string>;
-  devDependencies: Record<string, string>;
+// Utility function to convert string to kebab-case
+function toKebabCase(str: string): string {
+  return str
+    .replace(/([a-z])([A-Z])/g, "$1-$2") // camelCase to kebab-case
+    .replace(/[\s_]+/g, "-") // spaces and underscores to hyphens
+    .replace(/[^a-zA-Z0-9-]/g, "") // remove special characters
+    .toLowerCase()
+    .replace(/^-+|-+$/g, "") // remove leading/trailing hyphens
+    .replace(/-+/g, "-"); // collapse multiple hyphens
 }
 
-export default function generator(plop: PlopTypes.NodePlopAPI): void {
+// Function to get workspace folders from pnpm-workspace.yaml
+function getWorkspaceFolders(): string[] {
+  try {
+    const workspaceContent = readFileSync("pnpm-workspace.yaml", "utf8");
+    const workspace = parse(workspaceContent);
+
+    // Extract base folder names from patterns like "apps/*", "packages/*"
+    return (workspace.packages as string[])
+      .filter((pkg: string) => pkg.endsWith("/*"))
+      .map((pkg: string) => pkg.replace("/*", ""))
+      .sort();
+  } catch (error) {
+    console.warn("Could not read pnpm-workspace.yaml, using default folders");
+    return ["packages", "apps", "tooling", "api"];
+  }
+}
+
+// @ts-ignore
+module.exports = function generator(plop: any) {
+  const workspaceFolders = getWorkspaceFolders();
+
   plop.setGenerator("init", {
-    description: "Generate a new package for the Acme Monorepo",
+    description: "Generate a new monorepo package",
     prompts: [
+      {
+        type: "list",
+        name: "workspace",
+        message: "Select workspace folder:",
+        choices: workspaceFolders,
+        default: "packages",
+      },
       {
         type: "input",
         name: "name",
-        message:
-          "What is the name of the package? (You can skip the `@acme/` prefix)",
+        message: "Package name:",
+        validate: (input: string) =>
+          input && input.trim().length > 0 ? true : "Required",
+        filter: (input: string) => toKebabCase(input.replace(/^@[^/]+\//, "")),
       },
       {
         type: "input",
         name: "deps",
-        message:
-          "Enter a space separated list of dependencies you would like to install",
+        message: "Dependencies (space separated, optional):",
+        default: "",
       },
     ],
     actions: [
-      (answers) => {
-        if ("name" in answers && typeof answers.name === "string") {
-          if (answers.name.startsWith("@acme/")) {
-            answers.name = answers.name.replace("@acme/", "");
-          }
+      (answers: { name?: string; workspace?: string }) => {
+        if (answers.name) {
+          const kebabName = toKebabCase(answers.name);
+          answers.name = kebabName.replace(/^@[^/]+\//, "");
         }
         return "Config sanitized";
       },
       {
         type: "add",
-        path: "packages/{{ name }}/eslint.config.js",
+        path: "{{ workspace }}/{{ name }}/eslint.config.js",
         templateFile: "templates/eslint.config.js.hbs",
       },
       {
         type: "add",
-        path: "packages/{{ name }}/package.json",
+        path: "{{ workspace }}/{{ name }}/package.json",
         templateFile: "templates/package.json.hbs",
       },
       {
         type: "add",
-        path: "packages/{{ name }}/tsconfig.json",
+        path: "{{ workspace }}/{{ name }}/tsconfig.json",
         templateFile: "templates/tsconfig.json.hbs",
       },
       {
         type: "add",
-        path: "packages/{{ name }}/src/index.ts",
+        path: "{{ workspace }}/{{ name }}/src/index.ts",
         template: "export const name = '{{ name }}';",
       },
       {
         type: "modify",
-        path: "packages/{{ name }}/package.json",
-        async transform(content, answers) {
-          if ("deps" in answers && typeof answers.deps === "string") {
-            const pkg = JSON.parse(content) as PackageJson;
+        path: "{{ workspace }}/{{ name }}/package.json",
+        async transform(content: string, answers: { deps?: string }) {
+          if (answers.deps && answers.deps.trim()) {
+            const pkg = JSON.parse(content);
             for (const dep of answers.deps.split(" ").filter(Boolean)) {
-              const version = await fetch(
-                `https://registry.npmjs.org/-/package/${dep}/dist-tags`,
-              )
-                .then((res) => res.json())
-                .then((json: any) => json.latest);
-              if (!pkg.dependencies) pkg.dependencies = {};
-              pkg.dependencies[dep] = `^${version}`;
+              try {
+                const res = await fetch(
+                  `https://registry.npmjs.org/-/package/${dep}/dist-tags`,
+                );
+                const json = (await res.json()) as any;
+                const version = json.latest;
+                pkg.dependencies = pkg.dependencies || {};
+                pkg.dependencies[dep] = `^${version}`;
+              } catch {
+                console.warn(`Failed to fetch version for ${dep}, skipping...`);
+              }
             }
             return JSON.stringify(pkg, null, 2);
           }
           return content;
         },
       },
-      async (answers) => {
-        /**
-         * Install deps and format everything
-         */
-        if ("name" in answers && typeof answers.name === "string") {
-          // execSync("pnpm dlx sherif@latest --fix", {
-          //   stdio: "inherit",
-          // });
-          execSync("pnpm i", { stdio: "inherit" });
-          execSync(
-            `pnpm prettier --write packages/${answers.name}/** --list-different`,
-          );
-          return "Package scaffolded";
+      async (answers: { name?: string; workspace?: string }) => {
+        if (answers.name && answers.workspace) {
+          try {
+            execSync("pnpm i", { stdio: "inherit" });
+            execSync(
+              `pnpm prettier --write ${answers.workspace}/${answers.name}/** --list-different`,
+              { stdio: "inherit" },
+            );
+            return `Package '${answers.name}' created in '${answers.workspace}'!`;
+          } catch {
+            console.warn("Failed to install dependencies or format files");
+            return `Package '${answers.name}' created in '${answers.workspace}' (with warnings)`;
+          }
         }
         return "Package not scaffolded";
       },
     ],
   });
-}
+};
